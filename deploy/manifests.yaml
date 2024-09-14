@@ -1,0 +1,108 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hamhook
+---
+kind: MutatingWebhookConfiguration
+apiVersion: admissionregistration.k8s.io/v1
+metadata:
+  name: hamhook
+  annotations:
+    cert-manager.io/inject-ca-from: hamhook/hamhook-certificate
+webhooks:
+  - name: hamhook.hamhook.svc
+    clientConfig:
+      service:
+        namespace: hamhook
+        name: hamhook
+        path: /mutate
+        port: 443
+    rules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        resources: ["pods"]
+        operations: ["CREATE"]
+        scope: Namespaced
+    sideEffects: None
+    # failurePolicy: Ignore
+    admissionReviewVersions: ["v1"]
+    namespaceSelector:
+      matchExpressions:
+        - key: "kubernetes.io/metadata.name"
+          operator: "NotIn"
+          values:
+            - "hamhook"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: hamhook-certificate
+  namespace: hamhook
+spec:
+  secretName: hamhook-certificate
+  dnsNames:
+  - hamhook.hamhook.svc
+  issuerRef:
+    name: selfsigned-hamhook
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: selfsigned-hamhook
+  namespace: hamhook
+spec:
+  selfSigned: {}
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: hamhook
+  namespace: hamhook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hamhook
+  template:
+    metadata:
+      labels:
+        app: hamhook
+    spec:
+      containers:
+        - name: hamhook
+          image: plutocholia/hamhook:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8443
+          volumeMounts:
+            - name: cert
+              mountPath: /certs
+              readOnly: true
+      volumes:
+        - name: cert
+          secret:
+            secretName: hamhook-certificate
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: hamhook
+  namespace: hamhook
+spec:
+  selector:
+    app: hamhook
+  ports:
+    - port: 443
+      targetPort: 8443
+# ---
+# apiVersion: v1
+# kind: Endpoints
+# metadata:
+#   name: hamhook
+#   namespace: hamhook
+# subsets:
+#   - addresses:
+#       - ip: 192.168.0.27
+#     ports:
+#       - port: 8443
+#         protocol: TCP
