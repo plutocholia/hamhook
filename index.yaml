@@ -2,6 +2,16 @@ apiVersion: v1
 entries:
   hamhook:
   - apiVersion: v2
+    appVersion: v0.1.1
+    created: "2024-09-14T18:07:10.416096087Z"
+    description: A Helm chart for Kubernetes
+    digest: 9a6e010b4841d57f715dbfd3a78288ff95259db99ddb50f3b79f40ca836fb336
+    name: hamhook
+    type: application
+    urls:
+    - https://github.com/plutocholia/hamhook/releases/download/hamhook-0.1.1/hamhook-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v2
     appVersion: 0.1.0
     created: "2024-09-14T17:37:54.885507743Z"
     description: A Helm chart for Kubernetes
@@ -11,4 +21,4 @@ entries:
     urls:
     - https://github.com/plutocholia/hamhook/releases/download/hamhook-0.1.0/hamhook-0.1.0.tgz
     version: 0.1.0
-generated: "2024-09-14T17:37:54.885519815Z"
+generated: "2024-09-14T18:07:10.416114932Z"
