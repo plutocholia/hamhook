@@ -1,0 +1,37 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: {{ include "hamhook.fullname" . }}
+  namespace: {{.Release.Namespace}}
+  annotations:
+    cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ include "hamhook.fullname" . }}
+  labels:
+  {{- include "hamhook.labels" . | nindent 4 }}
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: '{{ include "hamhook.fullname" . }}'
+      namespace: '{{ .Release.Namespace }}'
+      path: /mutate
+      port: 443
+  name: '{{ include "hamhook.fullname" . }}.{{ .Release.Namespace }}.svc'
+  namespaceSelector:
+    matchExpressions:
+    - key: kubernetes.io/metadata.name
+      operator: NotIn
+      values:
+      - {{.Release.Namespace}}
+  rules:
+  - apiGroups:
+    - ""
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    resources:
+    - pods
+    scope: Namespaced
+  sideEffects: None
+
